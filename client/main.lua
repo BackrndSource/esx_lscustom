@@ -22,6 +22,11 @@ Citizen.CreateThread(function()
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(0)
 	end
+	while ESX.GetPlayerData().job == nil do
+		Citizen.Wait(10)
+	end
+
+	PlayerData = ESX.GetPlayerData()
 end)
 
 RegisterNetEvent('esx:playerLoaded')
@@ -375,6 +380,31 @@ Citizen.CreateThread(function()
 		BeginTextCommandSetBlipName("STRING")
 		AddTextComponentString(v.Name)
 		EndTextCommandSetBlipName(blip)
+	end
+end)
+
+-- Display markers
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(0)
+
+		if (PlayerData.job ~= nil and PlayerData.job.name == 'mechanic') or Config.IsMechanicJobOnly == false then
+			local coords = GetEntityCoords(PlayerPedId())
+			local letSleep = true
+
+			for k,v in pairs(Config.Zones) do
+				if v.Marker ~= -1 and GetDistanceBetweenCoords(coords, v.Pos.x, v.Pos.y, v.Pos.z, true) < Config.DrawDistance then
+					DrawMarker(v.Marker, v.Pos.x, v.Pos.y, v.Pos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, v.Color.r, v.Color.g, v.Color.b, 100, false, true, 2, false, nil, nil, false)
+					letSleep = false
+				end
+			end
+
+			if letSleep then
+				Citizen.Wait(500)
+			end
+		else
+			Citizen.Wait(500)
+		end
 	end
 end)
 
